@@ -295,18 +295,20 @@ class DLA(nn.Module):
         # fc = self.fc
         if name.endswith('.pth'):
             model_weights = torch.load(data + name)
+            self.load_state_dict(model_weights)
         else:
-            model_url = get_model_url(data, name, hash)
-            model_weights = model_zoo.load_url(model_url)
-        num_classes = len(model_weights[list(model_weights.keys())[-1]])
-        self.fc = nn.Conv2d(
-            self.channels[-1], num_classes,
-            kernel_size=1, stride=1, padding=0, bias=True)
-        self.load_state_dict(model_weights)
+            self.fc = nn.Sequential()
+        #     model_url = get_model_url(data, name, hash)
+        #     model_weights = model_zoo.load_url(model_url)
+        # num_classes = len(model_weights[list(model_weights.keys())[-1]])
+        # self.fc = nn.Conv2d(
+        #     self.channels[-1], num_classes,
+        #     kernel_size=1, stride=1, padding=0, bias=True)
+
         # self.fc = fc
 
 
-def dla34(pretrained=True, **kwargs):  # DLA-34
+def dla34(pretrained=False, **kwargs):  # DLA-34
     model = DLA([1, 1, 1, 2, 2, 1],
                 [16, 32, 64, 128, 256, 512],
                 block=BasicBlock, **kwargs)
