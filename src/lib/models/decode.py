@@ -560,6 +560,8 @@ def multi_pose_decode(heat,
     ],
         dim=2)
 
+    if bboxes.numel() == 0:
+        return torch.zeros(1, 0, 57)
 
     if hm_hp is not None:
         _, K, _ = bboxes.shape
@@ -571,7 +573,11 @@ def multi_pose_decode(heat,
         bs2, cls2, ys2, xs2 = (hm_hp > thresh).nonzero(as_tuple=True)
         hm_score = hm_hp[:, :, ys2, xs2]
         _, _, K2 = hm_score.shape
-
+        if K2 == 0:
+            kps = bboxes.new_zeros((1, K, 17 * 2))
+            kp_score = bboxes.new_full((1, K, 17 * 1), -1)
+            detections = torch.cat([bboxes, scores, kps, clses, kp_score], dim=2)
+            return detections
         reg_kps = kps.unsqueeze(3).expand(batch, num_joints, K, K2, 2)
 
         #         hm_score, hm_inds, hm_ys, hm_xs = _topk_channel(hm_hp,
